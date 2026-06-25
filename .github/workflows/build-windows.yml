@@ -2,19 +2,25 @@ name: Build Windows
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 jobs:
-  build:
+  build-windows:
+    name: Build Windows Installer
     runs-on: windows-2022
+
+    permissions:
+      contents: read
 
     env:
       VCPKG_DEFAULT_TRIPLET: x64-windows
       VCPKG_BINARY_SOURCES: clear
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -24,10 +30,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install tools
+      - name: Install Node dependencies
+        shell: bash
+        run: npm install
+
+      - name: Install build tools
         shell: pwsh
         run: |
-          choco install nsis pkgconfiglite --yes --no-progress
+          choco install nsis pkgconfiglite ninja --yes --no-progress
 
       - name: Clone vcpkg
         shell: pwsh
@@ -36,7 +46,7 @@ jobs:
           cd vcpkg
           .\bootstrap-vcpkg.bat
 
-      - name: Install dependencies
+      - name: Install dependencies via vcpkg
         shell: pwsh
         run: |
           .\vcpkg\vcpkg.exe install `
@@ -48,7 +58,7 @@ jobs:
         shell: cmd
         run: |
           cmake -B build ^
-            -G "NMake Makefiles" ^
+            -G "Ninja" ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DCMAKE_TOOLCHAIN_FILE=%GITHUB_WORKSPACE%\vcpkg\scripts\buildsystems\vcpkg.cmake ^
             -DVCPKG_TARGET_TRIPLET=x64-windows ^
@@ -60,7 +70,7 @@ jobs:
         shell: cmd
         run: cmake --build build --parallel
 
-      - name: Package
+      - name: Package (NSIS installer)
         shell: cmd
         run: |
           cd build
@@ -71,3 +81,4 @@ jobs:
         with:
           name: Windows-Installer
           path: build/*.exe
+          retention-days: 30

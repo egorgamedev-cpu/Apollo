@@ -3,7 +3,7 @@ name: Build Windows
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch:  # позволяет запускать вручную из GitHub UI
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -31,11 +31,37 @@ jobs:
         with:
           arch: x64
 
-      - name: Install Chocolatey dependencies
+      - name: Install dependencies via Chocolatey
         shell: pwsh
         run: |
           choco install nsis --yes --no-progress
           choco install strawberryperl --yes --no-progress
+          choco install pkgconfiglite --yes --no-progress
+
+      - name: Install pkg-config via winget fallback
+        shell: pwsh
+        run: |
+          # Add Strawberry Perl pkg-config to PATH (pkgconfiglite alternative)
+          $pkgconfig = "C:\Strawberry\c\bin"
+          if (Test-Path $pkgconfig) {
+            echo "$pkgconfig" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          }
+
+      - name: Setup pkg-config for Windows
+        shell: pwsh
+        run: |
+          # Install pkg-config via pip as fallback
+          pip install setuptools
+          # Download pkg-config binary
+          $url = "https://github.com/jtojnar/pkg-config-wrapper/releases/latest/download/pkg-config-windows-amd64.exe"
+          $dest = "C:\Windows\System32\pkg-config.exe"
+          try {
+            Invoke-WebRequest -Uri $url -OutFile $dest -ErrorAction Stop
+            Write-Host "pkg-config downloaded successfully"
+          } catch {
+            Write-Host "Trying alternative pkg-config source..."
+            choco install pkgconfiglite --yes --force --no-progress
+          }
 
       - name: Configure CMake
         shell: cmd

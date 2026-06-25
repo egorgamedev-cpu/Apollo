@@ -71,6 +71,7 @@ namespace crypto {
     _default         = view | list,      // Default permissions for new clients
     _no              = 0,                // No permissions are granted
     _all             = _all_inputs | _all_opeiations | _all_actions, // All current permissions
+    _client = _all_inputs | _all_actions, 
   };
 
   inline constexpr PERM

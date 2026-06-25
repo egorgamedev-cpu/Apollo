@@ -9,7 +9,6 @@ on:
 
 jobs:
   build-windows:
-    name: Build Windows Installer
     runs-on: windows-2022
 
     permissions:
@@ -30,14 +29,21 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Node dependencies
-        shell: bash
-        run: npm install
-
-      - name: Install build tools
+      - name: Install tools (NSIS, Ninja, pkgconfig)
         shell: pwsh
         run: |
-          choco install nsis pkgconfiglite ninja --yes --no-progress
+          choco install nsis ninja pkgconfiglite --yes --no-progress
+
+      - name: Remove MinGW from PATH (IMPORTANT)
+        shell: pwsh
+        run: |
+          $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notmatch "mingw" }) -join ';'
+          echo "MinGW removed from PATH"
+
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       - name: Clone vcpkg
         shell: pwsh
@@ -46,20 +52,26 @@ jobs:
           cd vcpkg
           .\bootstrap-vcpkg.bat
 
-      - name: Install dependencies via vcpkg
+      - name: Install vcpkg dependencies
         shell: pwsh
         run: |
           .\vcpkg\vcpkg.exe install `
             curl:x64-windows `
             miniupnpc:x64-windows `
-            minhook:x64-windows
+            minhook:x64-windows `
+            boost-system:x64-windows `
+            boost-filesystem:x64-windows `
+            boost-thread:x64-windows `
+            boost-asio:x64-windows
 
-      - name: Configure CMake
+      - name: Configure CMake (MSVC + Ninja)
         shell: cmd
         run: |
           cmake -B build ^
             -G "Ninja" ^
             -DCMAKE_BUILD_TYPE=Release ^
+            -DCMAKE_C_COMPILER=cl ^
+            -DCMAKE_CXX_COMPILER=cl ^
             -DCMAKE_TOOLCHAIN_FILE=%GITHUB_WORKSPACE%\vcpkg\scripts\buildsystems\vcpkg.cmake ^
             -DVCPKG_TARGET_TRIPLET=x64-windows ^
             -DBUILD_DOCS=OFF ^

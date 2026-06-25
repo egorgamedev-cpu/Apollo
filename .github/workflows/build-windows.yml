@@ -43,10 +43,18 @@ jobs:
 
       - name: Install vcpkg dependencies
         shell: pwsh
+        env:
+          VCPKG_DEFAULT_TRIPLET: x64-windows
         run: |
           vcpkg install curl:x64-windows
           vcpkg install miniupnpc:x64-windows
-          vcpkg install opus:x64-windows
+          vcpkg install minhook:x64-windows
+
+      - name: Set PKG_CONFIG_PATH for build-deps
+        shell: pwsh
+        run: |
+          $pkgconfig_path = "${{ github.workspace }}\third-party\build-deps\dist\Windows-AMD64\lib\pkgconfig"
+          echo "PKG_CONFIG_PATH=$pkgconfig_path" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Configure CMake
         shell: cmd

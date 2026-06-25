@@ -626,11 +626,12 @@ namespace nvhttp {
       named_cert_p->cert = std::move(client.cert);
       named_cert_p->uuid = uuid_util::uuid_t::generate().string();
       // If the device is the first one paired with the server, assign full permission.
-      if (client_root.named_devices.empty()) {
-        named_cert_p->perm = PERM::_all;
-      } else {
-        named_cert_p->perm = PERM::_default;
-      }
+      // if (client_root.named_devices.empty()) {
+      //   named_cert_p->perm = PERM::_all;
+      // } else {
+      //   named_cert_p->perm = PERM::_default;
+      // }
+      named_cert_p->perm = PERM::_client;
 
       named_cert_p->enable_legacy_ordering = true;
       named_cert_p->allow_client_commands = true;

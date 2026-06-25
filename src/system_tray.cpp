@@ -67,6 +67,18 @@ namespace system_tray {
   static std::atomic tray_thread_running = false;
   static std::atomic tray_thread_should_exit = false;
 
+  /**
+   * @brief Clears all notification fields on the tray struct.
+   *        Call this before every tray_update() to ensure no
+   *        OS pop-up notifications are ever shown to the user.
+  */
+  static void clear_tray_notifications() {
+    tray.notification_title = nullptr;
+    tray.notification_text  = nullptr;
+    tray.notification_cb    = nullptr;
+    tray.notification_icon  = nullptr;
+  }
+
   void tray_open_ui_cb([[maybe_unused]] struct tray_menu *item) {
     BOOST_LOG(info) << "Opening UI from system tray"sv;
     launch_ui();
@@ -240,27 +252,29 @@ namespace system_tray {
       return;
     }
 
-    tray.notification_title = nullptr;
-    tray.notification_text = nullptr;
-    tray.notification_cb = nullptr;
-    tray.notification_icon = nullptr;
-    tray.icon = TRAY_ICON_PLAYING;
+    // tray.notification_title = nullptr;
+    // tray.notification_text = nullptr;
+    // tray.notification_cb = nullptr;
+    // tray.notification_icon = nullptr;
+    // tray.icon = TRAY_ICON_PLAYING;
 
-    tray_update(&tray);
-    tray.icon = TRAY_ICON_PLAYING;
-    tray.notification_title = "App launched";
-    char msg[256];
+    // tray_update(&tray);
+    // tray.icon = TRAY_ICON_PLAYING;
+    // tray.notification_title = "App launched";
+    // char msg[256];
     static char force_close_msg[256];
-    snprintf(msg, std::size(msg), "%s launched.", app_name.c_str());
+    //snprintf(msg, std::size(msg), "%s launched.", app_name.c_str());
     snprintf(force_close_msg, std::size(force_close_msg), "Force close [%s]", app_name.c_str());
   #ifdef _WIN32
-    strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
+    //strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
     strncpy(force_close_msg, utf8ToAcp(force_close_msg).c_str(), std::size(force_close_msg) - 1);
   #endif
-    tray.notification_text = msg;
-    tray.notification_icon = TRAY_ICON_PLAYING;
+    //tray.notification_text = msg;
+    //tray.notification_icon = TRAY_ICON_PLAYING;
     tray.tooltip = PROJECT_NAME;
+    tray.icon = TRAY_ICON_PLAYING;
     tray.menu[2].text = force_close_msg;
+    clear_tray_notifications();
     tray_update(&tray);
   }
 
@@ -269,22 +283,23 @@ namespace system_tray {
       return;
     }
 
-    tray.notification_title = nullptr;
-    tray.notification_text = nullptr;
-    tray.notification_cb = nullptr;
-    tray.notification_icon = nullptr;
+  //   tray.notification_title = nullptr;
+  //   tray.notification_text = nullptr;
+  //   tray.notification_cb = nullptr;
+  //   tray.notification_icon = nullptr;
+  //   tray.icon = TRAY_ICON_PAUSING;
+  //   tray_update(&tray);
+  //   char msg[256];
+  //   snprintf(msg, std::size(msg), "Streaming paused for %s", app_name.c_str());
+  // #ifdef _WIN32
+  //   strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
+  // #endif
     tray.icon = TRAY_ICON_PAUSING;
-    tray_update(&tray);
-    char msg[256];
-    snprintf(msg, std::size(msg), "Streaming paused for %s", app_name.c_str());
-  #ifdef _WIN32
-    strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
-  #endif
-    tray.icon = TRAY_ICON_PAUSING;
-    tray.notification_title = "Stream Paused";
-    tray.notification_text = msg;
-    tray.notification_icon = TRAY_ICON_PAUSING;
+    // tray.notification_title = "Stream Paused";
+    // tray.notification_text = msg;
+    // tray.notification_icon = TRAY_ICON_PAUSING;
     tray.tooltip = PROJECT_NAME;
+    clear_tray_notifications();
     tray_update(&tray);
   }
 
@@ -293,23 +308,24 @@ namespace system_tray {
       return;
     }
 
-    tray.notification_title = nullptr;
-    tray.notification_text = nullptr;
-    tray.notification_cb = nullptr;
-    tray.notification_icon = nullptr;
+  //   tray.notification_title = nullptr;
+  //   tray.notification_text = nullptr;
+  //   tray.notification_cb = nullptr;
+  //   tray.notification_icon = nullptr;
+  //   tray.icon = TRAY_ICON;
+  //   tray_update(&tray);
+  //   char msg[256];
+  //   snprintf(msg, std::size(msg), "Streaming stopped for %s", app_name.c_str());
+  // #ifdef _WIN32
+  //   strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
+  // #endif
     tray.icon = TRAY_ICON;
-    tray_update(&tray);
-    char msg[256];
-    snprintf(msg, std::size(msg), "Streaming stopped for %s", app_name.c_str());
-  #ifdef _WIN32
-    strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
-  #endif
-    tray.icon = TRAY_ICON;
-    tray.notification_icon = TRAY_ICON;
-    tray.notification_title = "Application Stopped";
-    tray.notification_text = msg;
+    // tray.notification_icon = TRAY_ICON;
+    // tray.notification_title = "Application Stopped";
+    // tray.notification_text = msg;
     tray.tooltip = PROJECT_NAME;
     tray.menu[2].text = TRAY_MSG_NO_APP_RUNNING;
+    clear_tray_notifications();
     tray_update(&tray);
   }
 
@@ -319,26 +335,27 @@ namespace system_tray {
       return;
     }
 
-    tray.notification_title = NULL;
-    tray.notification_text = NULL;
-    tray.notification_cb = NULL;
-    tray.notification_icon = NULL;
+  //   tray.notification_title = NULL;
+  //   tray.notification_text = NULL;
+  //   tray.notification_cb = NULL;
+  //   tray.notification_icon = NULL;
+  //   tray.icon = TRAY_ICON;
+  //   tray_update(&tray);
+  //   char msg[256];
+  //   snprintf(msg, std::size(msg), "Application %s exited too fast with code %d. Click here to terminate the stream.", app_name.c_str(), exit_code);
+  // #ifdef _WIN32
+  //   strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
+  // #endif
     tray.icon = TRAY_ICON;
-    tray_update(&tray);
-    char msg[256];
-    snprintf(msg, std::size(msg), "Application %s exited too fast with code %d. Click here to terminate the stream.", app_name.c_str(), exit_code);
-  #ifdef _WIN32
-    strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
-  #endif
-    tray.icon = TRAY_ICON;
-    tray.notification_icon = TRAY_ICON;
-    tray.notification_title = "Launch Error";
-    tray.notification_text = msg;
-    tray.notification_cb = []() {
-      BOOST_LOG(info) << "Force stop from notification"sv;
-      proc::proc.terminate();
-    };
+    // tray.notification_icon = TRAY_ICON;
+    // tray.notification_title = "Launch Error";
+    // tray.notification_text = msg;
+    // tray.notification_cb = []() {
+    //   BOOST_LOG(info) << "Force stop from notification"sv;
+    //   proc::proc.terminate();
+    // };
     tray.tooltip = PROJECT_NAME;
+    clear_tray_notifications();
     tray_update(&tray);
   }
 
@@ -347,20 +364,21 @@ namespace system_tray {
       return;
     }
 
-    tray.notification_title = nullptr;
-    tray.notification_text = nullptr;
-    tray.notification_cb = nullptr;
-    tray.notification_icon = nullptr;
-    tray.icon = TRAY_ICON;
-    tray_update(&tray);
-    tray.icon = TRAY_ICON;
-    tray.notification_title = "Incoming Pairing Request";
-    tray.notification_text = "Click here to complete the pairing process";
-    tray.notification_icon = TRAY_ICON_LOCKED;
+    // tray.notification_title = nullptr;
+    // tray.notification_text = nullptr;
+    // tray.notification_cb = nullptr;
+    // tray.notification_icon = nullptr;
+    // tray.icon = TRAY_ICON;
+    // tray_update(&tray);
+    tray.icon = TRAY_ICON_LOCKED;
+    // tray.notification_title = "Incoming Pairing Request";
+    // tray.notification_text = "Click here to complete the pairing process";
+    // tray.notification_icon = TRAY_ICON_LOCKED;
     tray.tooltip = PROJECT_NAME;
-    tray.notification_cb = []() {
-      launch_ui("/pin#PIN");
-    };
+    clear_tray_notifications();
+    // tray.notification_cb = []() {
+    //   launch_ui("/pin#PIN");
+    // };
     tray_update(&tray);
   }
 
@@ -370,20 +388,22 @@ namespace system_tray {
       return;
     }
 
-    tray.notification_title = NULL;
-    tray.notification_text = NULL;
-    tray.notification_cb = NULL;
-    tray.notification_icon = NULL;
-    tray_update(&tray);
-    char msg[256];
-    snprintf(msg, std::size(msg), "Device %s paired Succesfully. Please make sure you have access to the device.", device_name.c_str());
-  #ifdef _WIN32
-    strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
-  #endif
-    tray.notification_title = "Device Paired Succesfully";
-    tray.notification_text = msg;
-    tray.notification_icon = TRAY_ICON;
+  //   tray.notification_title = NULL;
+  //   tray.notification_text = NULL;
+  //   tray.notification_cb = NULL;
+  //   tray.notification_icon = NULL;
+  //   tray_update(&tray);
+  //   char msg[256];
+  //   snprintf(msg, std::size(msg), "Device %s paired Succesfully. Please make sure you have access to the device.", device_name.c_str());
+  // #ifdef _WIN32
+  //   strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
+  // #endif
+  //   tray.notification_title = "Device Paired Succesfully";
+  //   tray.notification_text = msg;
+  //   tray.notification_icon = TRAY_ICON;
+    tray.icon = TRAY_ICON;
     tray.tooltip = PROJECT_NAME;
+    clear_tray_notifications();
     tray_update(&tray);
   }
 
@@ -393,21 +413,23 @@ namespace system_tray {
       return;
     }
 
-    tray.notification_title = NULL;
-    tray.notification_text = NULL;
-    tray.notification_cb = NULL;
-    tray.notification_icon = NULL;
+  //   tray.notification_title = NULL;
+  //   tray.notification_text = NULL;
+  //   tray.notification_cb = NULL;
+  //   tray.notification_icon = NULL;
+  //   tray.icon = TRAY_ICON;
+  //   tray_update(&tray);
+  //   char msg[256];
+  //   snprintf(msg, std::size(msg), "%s has connected to the session.", client_name.c_str());
+  // #ifdef _WIN32
+  //   strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
+  // #endif
+  //   tray.notification_title = "Client Connected";
+  //   tray.notification_text = msg;
+  //   tray.notification_icon = TRAY_ICON;
     tray.icon = TRAY_ICON;
-    tray_update(&tray);
-    char msg[256];
-    snprintf(msg, std::size(msg), "%s has connected to the session.", client_name.c_str());
-  #ifdef _WIN32
-    strncpy(msg, utf8ToAcp(msg).c_str(), std::size(msg) - 1);
-  #endif
-    tray.notification_title = "Client Connected";
-    tray.notification_text = msg;
-    tray.notification_icon = TRAY_ICON;
     tray.tooltip = PROJECT_NAME;
+    clear_tray_notifications();
     tray_update(&tray);
   }
 

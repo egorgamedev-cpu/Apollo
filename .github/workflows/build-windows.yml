@@ -30,43 +30,37 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Node dependencies (Web UI)
+      - name: Install npm dependencies
         shell: bash
-        run: |
-          npm install
+        run: npm install
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
 
-      - name: Install Chocolatey dependencies
+      - name: Install tools
         shell: pwsh
         run: |
-          choco install nsis --yes --no-progress
-          choco install pkgconfiglite --yes --no-progress
+          choco install nsis pkgconfiglite --yes --no-progress
 
+      # используем свежий vcpkg
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgGitCommitId: a42af01b72c28a8e1d7b48107b33e4f286a55ef6
 
-      - name: Install vcpkg dependencies
+      - name: Bootstrap vcpkg
+        shell: pwsh
+        run: |
+          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat"
+
+      - name: Install dependencies
         shell: pwsh
         run: |
           vcpkg install `
-            curl:x64-windows `
-            miniupnpc:x64-windows `
-            minhook:x64-windows
-
-      - name: Set PKG_CONFIG_PATH
-        shell: pwsh
-        run: |
-          $pkgconfig="${{ github.workspace }}\third-party\build-deps\dist\Windows-AMD64\lib\pkgconfig"
-          "PKG_CONFIG_PATH=$pkgconfig" | Out-File `
-            -FilePath $env:GITHUB_ENV `
-            -Encoding utf8 `
-            -Append
+            curl `
+            miniupnpc `
+            minhook `
+            --triplet x64-windows
 
       - name: Configure CMake
         shell: cmd
@@ -83,15 +77,15 @@ jobs:
       - name: Build
         shell: cmd
         run: |
-          cmake --build build --parallel %NUMBER_OF_PROCESSORS%
+          cmake --build build --parallel
 
-      - name: Package (NSIS installer)
+      - name: Package installer
         shell: cmd
         run: |
           cd build
           cpack -G NSIS
 
-      - name: Upload installer
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Apollo-Windows-Installer

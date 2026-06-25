@@ -67,18 +67,6 @@ namespace system_tray {
   static std::atomic tray_thread_running = false;
   static std::atomic tray_thread_should_exit = false;
 
-  /**
-   * @brief Clears all notification fields on the tray struct.
-   *        Call this before every tray_update() to ensure no
-   *        OS pop-up notifications are ever shown to the user.
-  */
-  static void clear_tray_notifications() {
-    tray.notification_title = nullptr;
-    tray.notification_text  = nullptr;
-    tray.notification_cb    = nullptr;
-    tray.notification_icon  = nullptr;
-  }
-
   void tray_open_ui_cb([[maybe_unused]] struct tray_menu *item) {
     BOOST_LOG(info) << "Opening UI from system tray"sv;
     launch_ui();
@@ -151,6 +139,18 @@ namespace system_tray {
     .iconPathCount = 4,
     .allIconPaths = {TRAY_ICON, TRAY_ICON_LOCKED, TRAY_ICON_PLAYING, TRAY_ICON_PAUSING},
   };
+
+    /**
+   * @brief Clears all notification fields on the tray struct.
+   *        Call this before every tray_update() to ensure no
+   *        OS pop-up notifications are ever shown to the user.
+  */
+  static void clear_tray_notifications() {
+    tray.notification_title = nullptr;
+    tray.notification_text  = nullptr;
+    tray.notification_cb    = nullptr;
+    tray.notification_icon  = nullptr;
+  }
 
   int init_tray() {
   #ifdef _WIN32

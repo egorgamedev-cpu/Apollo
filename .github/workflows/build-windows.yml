@@ -1,0 +1,66 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:  # позволяет запускать вручную из GitHub UI
+
+jobs:
+  build-windows:
+    name: Build Windows Installer
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install npm dependencies (Web UI)
+        shell: bash
+        run: |
+          npm install
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Chocolatey dependencies
+        shell: pwsh
+        run: |
+          choco install nsis --yes --no-progress
+          choco install strawberryperl --yes --no-progress
+
+      - name: Configure CMake
+        shell: cmd
+        run: |
+          cmake -B build ^
+            -G "NMake Makefiles" ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DBUILD_DOCS=OFF ^
+            -DBUILD_TESTS=OFF ^
+            -DSUNSHINE_ENABLE_TRAY=ON
+
+      - name: Build
+        shell: cmd
+        run: |
+          cmake --build build --config Release --parallel %NUMBER_OF_PROCESSORS%
+
+      - name: Package (NSIS installer)
+        shell: cmd
+        run: |
+          cd build
+          cpack -G NSIS
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Apollo-Windows-Installer
+          path: build/*.exe
+          retention-days: 30

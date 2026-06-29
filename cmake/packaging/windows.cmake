@@ -13,6 +13,7 @@ file(DOWNLOAD
         EXPECTED_HASH SHA256=155c50f1eec07bdc28d2f61a3e3c2c6c132fee7328412de224695f89143316bc
         TIMEOUT 60
 )
+
 install(FILES ${VIGEMBUS_INSTALLER}
         DESTINATION "scripts"
         RENAME "vigembus_installer.exe"
